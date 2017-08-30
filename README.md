@@ -1,16 +1,20 @@
 
-# Getting started with Puppeteer and Chrome Headless for Web Scraping
+# Puppeteer 与 Chrome Headless —— 从入门到爬虫
 
-**Here is a link to [Medium Article](https://medium.com/@e_mad_ehsan/getting-started-with-puppeteer-and-chrome-headless-for-web-scrapping-6bf5979dee3e)**
+**这里是 [GitHub 英文原文](https://github.com/emadehsan/thal)**
+**这里是 [Medium 英文原文](https://medium.com/@e_mad_ehsan/getting-started-with-puppeteer-and-chrome-headless-for-web-scrapping-6bf5979dee3e)**
 
 ![A Desert in painters perception](./media/desertious.jpg)
 
-[`Puppeteer`](https://github.com/GoogleChrome/puppeteer) is official tool for Chrome Headless by Google Chrome team. Since the official announcement of Chrome Headless, many of the industry standard libraries for automated testing have been discontinued by their maintainers. Including **PhantomJS**. **Selenium IDE for Firefox** has been discontinued due to lack of maintainers.
+[`Puppeteer`](https://github.com/GoogleChrome/puppeteer) 是 Google Chrome 团队官方的无状态（Headless）Chrome 工具。正因为这个官方声明，许多业内自动化测试库都已经停止维护，包括 **[PhantomJS](http://phantomjs.org/)**. **[Selenium IDE for Firefox](https://addons.mozilla.org/en-US/firefox/addon/selenium-ide/)** 项目也因为缺乏维护者而终止。（
 
-For sure, Chrome being the market leader in web browsing, **Chrome Headless** is going to industry leader in **Automated Testing** of web applications. So, I have put together this starter guide on how to get started with `Web Scraping` in **Chrome Headless**.
+> 译者注：关于 PhantomJS 和 Selenium IDE for Firefox 停止维护并没有找到相关的公告，但这两个项目的确已经都超过 2 年没有发布新版本了。但另一个今年 5 月才开启的项目 [Chromeless](https://github.com/graphcool/chromeless) 目前在 Github 上已经超过 1w star，目前还非常活跃。
+
+Chrome 作为浏览器市场的领头羊，**Chrome Headless** 必将成为 web 应用 **自动化测试** 的行业标杆。所以我整合了这份如何利用 **Chrome Headless** 做 `网页爬虫` 的入门指南。
 
 ## TL;DR
-In this guide we will scrap GitHub, login to it and extract and save emails of users using `Chrome Headless`, `Puppeteer`, `Node` and `MongoDB`. Don't worry GitHub have rate limiting mechanism in place to keep you under control but this post will give you good idea on Scrapping with Chrome Headless and Node. Also, alway stay updated with the [documentation](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md) because `Puppeteer` is under development and APIs are prone to changes.
+
+本文我们将使用 `Chrome Headless`, `Puppeteer`, `Node` 和 `MongoDB`，爬取 GitHub，登录并提取和保存用户的邮箱。不用担心 GitHub 的频率限制，本文会基于 Chrome Headless 和 Node 给你相应的策略。同时，请时刻关注 `Puppeteer` 的[文档](https://github.com/GoogleChrome/puppeteer/blob/master/docs/api.md)，因为该项目仍然处于开发中，API 并不是很稳定。
 
 ## Getting Started
 Before we start, we need following tools installed. Head over to their websites and install them.
