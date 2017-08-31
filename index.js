@@ -1,9 +1,6 @@
-
 const puppeteer = require('puppeteer');
-
-const CREDS = require('./creds');
-
 const mongoose = require('mongoose');
+const CREDS = require('./creds');
 const User = require('./models/user');
 
 async function run() {
@@ -39,92 +36,98 @@ async function run() {
 	await page.goto(searchUrl);
 	await page.waitFor(2 * 1000);
 
-	// let LIST_USERNAME_SELECTOR = '#user_search_results > div.user-list > div:nth-child(1) > div.d-flex > div > a';
-	let LIST_USERNAME_SELECTOR = '#user_search_results > div.user-list > div:nth-child(INDEX) > div.d-flex > div > a';
-	// let LIST_EMAIL_SELECTOR = '#user_search_results > div.user-list > div:nth-child(1) > div.d-flex > div > ul > li:nth-child(2) > a';
-	let LIST_EMAIL_SELECTOR = '#user_search_results > div.user-list > div:nth-child(INDEX) > div.d-flex > div > ul > li:nth-child(2) > a';
+  const USER_LIST_INFO_SELECTOR = '.user-list-item';
+  const USER_LIST_USERNAME_SELECTOR = '.user-list-info>a:nth-child(1)';
+  const USER_LIST_EMAIL_SELECTOR = '.user-list-info>.user-list-meta .muted-link';
 
-	let LENGTH_SELECTOR_CLASS = 'user-list-item';
+  const numPages = await getNumPages(page);
+  console.log('Numpages: ', numPages);
 
-    let numPages = await getNumPages(page);
+  for (let h = 1; h <= numPages; h++) {
+    // 跳转到指定页码
+    await page.goto(`${searchUrl}&p=${h}`);
+    // 执行爬取
+    const users = await page.evaluate((sInfo, sName, sEmail) => {
+      return Array.prototype.slice.apply(document.querySelectorAll(sInfo))
+        .map($userListItem => {
+          // 用户名
+          const username = $userListItem.querySelector(sName).innerText;
+          // 邮箱
+          const $email = $userListItem.querySelector(sEmail);
+          const email = $email ? $email.innerText : undefined;
+          return {
+            username,
+            email,
+          };
+        })
+        // 不是所有用户都显示邮箱
+        .filter(u => !!u.email);
+    }, USER_LIST_INFO_SELECTOR, USER_LIST_USERNAME_SELECTOR, USER_LIST_EMAIL_SELECTOR);
 
-    console.log('Numpages: ', numPages);
-
-	for (let h = 1; h <= numPages; h++) {
-
-		let pageUrl = searchUrl + '&p=' + h;
-
-		await page.goto(pageUrl);
-
-        let listLength = await page.evaluate((sel) => {
-            return document.getElementsByClassName(sel).length;
-        }, LENGTH_SELECTOR_CLASS);
-
-		for (let i = 1; i <= listLength; i++) {
-			// change the index to the next child
-			let usernameSelector = LIST_USERNAME_SELECTOR.replace("INDEX", i);
-			let emailSelector = LIST_EMAIL_SELECTOR.replace("INDEX", i);
-
-            let username = await page.evaluate((sel) => {
-                return document.querySelector(sel).getAttribute('href').replace('/', '');
-            }, usernameSelector);
-
-            let email = await page.evaluate((sel) => {
-                let element = document.querySelector(sel);
-                return element? element.innerHTML: null;
-            }, emailSelector);
-
-			// not all users have emails visible
-			if (!email)
-				continue;
-
-			console.log(username, ' -> ', email);
-
-			upsertUser({
-				username: username,
-				email: email,
-				dateCrawled: new Date()
-			});
-		}
-	}
+    users.map(({username, email}) => {
+      // 保存用户信息
+      upsertUser({
+        username: username,
+        email: email,
+        dateCrawled: new Date()
+      });
+    });
+  }
 
 	browser.close();
 }
 
+/**
+ * 获取页数
+ * @param  {Page} page 搜索结果页
+ * @return {number}    总页数
+ */
 async function getNumPages(page) {
-    let NUM_USER_SELECTOR = '#js-pjax-container > div.container > div > div.column.three-fourths.codesearch-results.pr-6 > div.d-flex.flex-justify-between.border-bottom.pb-3 > h3';
+  const NUM_USER_SELECTOR = '#js-pjax-container > div.container > div > div.column.three-fourths.codesearch-results.pr-6 > div.d-flex.flex-justify-between.border-bottom.pb-3 > h3';
 
-    let inner = await page.evaluate((sel) => {
-        return document.querySelector(sel).innerHTML;
-    }, NUM_USER_SELECTOR);
+  let inner = await page.evaluate((sel) => {
+    return document.querySelector(sel).innerHTML;
+  }, NUM_USER_SELECTOR);
 
-    // format is: "69,803 users"
-	inner = inner.replace(',', '').replace(' users', '');
+  // 格式是: "69,803 users"
+  inner = inner.replace(',', '').replace(' users', '');
+  const numUsers = parseInt(inner);
+  console.log('numUsers: ', numUsers);
 
-	let numUsers = parseInt(inner);
-
-    console.log('numUsers: ', numUsers);
-
-	/*
-	* GitHub shows 10 resuls per page, so
-	*/
-	let numPages = Math.ceil(numUsers / 10);
-	return numPages;
+  /*
+   * GitHub 每页显示 10 个结果
+   */
+  const numPages = Math.ceil(numUsers / 10);
+  return numPages;
 }
 
+/**
+ * 新增或更新用户信息
+ * @param  {object} userObj 用户信息
+ */
 function upsertUser(userObj) {
 
-	const DB_URL = 'mongodb://localhost/thal';
+  const DB_URL = 'mongodb://localhost/thal';
+  if (mongoose.connection.readyState == 0) {
+    mongoose.connect(DB_URL);
+  }
 
-    if (mongoose.connection.readyState == 0) { mongoose.connect(DB_URL); }
+  // if this email exists, update the entry, don't insert
+  // 如果邮箱存在，就更新实例，不新增
+  const conditions = {
+    email: userObj.email
+  };
+  const options = {
+    upsert: true,
+    new: true,
+    setDefaultsOnInsert: true
+  };
 
-    // if this email exists, update the entry, don't insert
-	let conditions = { email: userObj.email };
-	let options = { upsert: true, new: true, setDefaultsOnInsert: true };
-
-    User.findOneAndUpdate(conditions, userObj, options, (err, result) => {
-        if (err) throw err;
-    });
+  User.findOneAndUpdate(conditions, userObj, options, (err, result) => {
+    if (err) {
+      throw err;
+    }
+  });
 }
 
 run();
