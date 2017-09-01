@@ -1,9 +1,10 @@
 
 # Puppeteer 与 Chrome Headless —— 从入门到爬虫
 
-**这里是 [GitHub 英文原文](https://github.com/emadehsan/thal)**
+**这里是 [@emadehsan
+](https://github.com/emadehsan) 的 [GitHub 英文原文](https://github.com/emadehsan/thal)**
 
-**这里是 [Medium 英文原文](https://medium.com/@e_mad_ehsan/getting-started-with-puppeteer-and-chrome-headless-for-web-scrapping-6bf5979dee3e)**
+**和 [他](https://medium.com/@e_mad_ehsan) 的 [Medium 英文原文](https://medium.com/@e_mad_ehsan/getting-started-with-puppeteer-and-chrome-headless-for-web-scrapping-6bf5979dee3e)**
 
 ![A Desert in painters perception](./media/desertious.jpg)
 
