@@ -4,37 +4,37 @@ const CREDS = require('./creds');
 const User = require('./models/user');
 
 async function run() {
-	const browser = await puppeteer.launch({
-		headless: false
-	});
-	const page = await browser.newPage();
+  const browser = await puppeteer.launch({
+    headless: false
+  });
+  const page = await browser.newPage();
 
-	// await page.goto('https://github.com');
-	// await page.screenshot({path: 'screenshots/github.png'});
+  // await page.goto('https://github.com');
+  // await page.screenshot({path: 'screenshots/github.png'});
 
-	await page.goto('https://github.com/login');
+  await page.goto('https://github.com/login');
 
-	// dom element selectors
-	const USERNAME_SELECTOR = '#login_field';
-	const PASSWORD_SELECTOR = '#password';
-	const BUTTON_SELECTOR = '#login > form > div.auth-form-body.mt-3 > input.btn.btn-primary.btn-block';
+  // dom element selectors
+  const USERNAME_SELECTOR = '#login_field';
+  const PASSWORD_SELECTOR = '#password';
+  const BUTTON_SELECTOR = '#login > form > div.auth-form-body.mt-3 > input.btn.btn-primary.btn-block';
 
-	await page.click(USERNAME_SELECTOR);
-	await page.type(CREDS.username);
+  await page.click(USERNAME_SELECTOR);
+  await page.type(CREDS.username);
 
-	await page.click(PASSWORD_SELECTOR);
-	await page.type(CREDS.password);
+  await page.click(PASSWORD_SELECTOR);
+  await page.type(CREDS.password);
 
-	await page.click(BUTTON_SELECTOR);
+  await page.click(BUTTON_SELECTOR);
 
-	await page.waitForNavigation();
+  await page.waitForNavigation();
 
-	let userToSearch = 'john';
-	let searchUrl = 'https://github.com/search?q=' + userToSearch + '&type=Users&utf8=%E2%9C%93';
-	// let searchUrl = 'https://github.com/search?utf8=%E2%9C%93&q=bashua&type=Users';
+  let userToSearch = 'john';
+  let searchUrl = 'https://github.com/search?q=' + userToSearch + '&type=Users&utf8=%E2%9C%93';
+  // let searchUrl = 'https://github.com/search?utf8=%E2%9C%93&q=bashua&type=Users';
 
-	await page.goto(searchUrl);
-	await page.waitFor(2 * 1000);
+  await page.goto(searchUrl);
+  await page.waitFor(2 * 1000);
 
   const USER_LIST_INFO_SELECTOR = '.user-list-item';
   const USER_LIST_USERNAME_SELECTOR = '.user-list-info>a:nth-child(1)';
@@ -43,7 +43,7 @@ async function run() {
   const numPages = await getNumPages(page);
   console.log('Numpages: ', numPages);
 
-  for (let h = 1; h <= numPages; h++) {
+  for (let h = 1; h <= 5; h++) {
     // 跳转到指定页码
     await page.goto(`${searchUrl}&p=${h}`);
     // 执行爬取
@@ -74,7 +74,8 @@ async function run() {
     });
   }
 
-	browser.close();
+  // 关闭 puppeteer
+  browser.close();
 }
 
 /**

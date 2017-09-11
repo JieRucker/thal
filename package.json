@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "mongo": "mongod --dbpath ./db",
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
