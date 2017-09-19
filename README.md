@@ -81,6 +81,8 @@ $ node index.js
 
 这样截图就会被保存到 `screenshots/` 目录下。
 
+> 译者注：如果不是 clone 本 repo 的童鞋可能会遇到 `screenshots` 目录不存在的异常，请先手动创建该目录，或使用 [mkdirp](https://www.npmjs.com/package/mkdirp)。
+
 ![GitHub](./screenshots/github.png)
 
 ### 登录 GitHub
