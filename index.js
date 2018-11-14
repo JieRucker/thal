@@ -19,18 +19,13 @@ async function run() {
   const PASSWORD_SELECTOR = '#password';
   const BUTTON_SELECTOR = '#login > form > div.auth-form-body.mt-3 > input.btn.btn-primary.btn-block';
 
-  await page.click(USERNAME_SELECTOR);
-  await page.type(CREDS.username);
-
-  await page.click(PASSWORD_SELECTOR);
-  await page.type(CREDS.password);
-
+  await page.type(USERNAME_SELECTOR, CREDS.username);
+  await page.type(PASSWORD_SELECTOR, CREDS.password);
   await page.click(BUTTON_SELECTOR);
-
   await page.waitForNavigation();
 
-  let userToSearch = 'john';
-  let searchUrl = 'https://github.com/search?q=' + userToSearch + '&type=Users&utf8=%E2%9C%93';
+  const userToSearch = 'john';
+  const searchUrl = 'https://github.com/search?q=' + userToSearch + '&type=Users&utf8=%E2%9C%93';
   // let searchUrl = 'https://github.com/search?utf8=%E2%9C%93&q=bashua&type=Users';
 
   await page.goto(searchUrl);
@@ -43,7 +38,7 @@ async function run() {
   const numPages = await getNumPages(page);
   console.log('Numpages: ', numPages);
 
-  for (let h = 1; h <= 5; h++) {
+  for (let h = 1; h <= numPages; h++) {
     // 跳转到指定页码
     await page.goto(`${searchUrl}&p=${h}`);
     // 执行爬取
@@ -76,6 +71,9 @@ async function run() {
 
   // 关闭 puppeteer
   browser.close();
+
+  // TODO: upsertUser 为异步方法，这里并没有等待其完成，纯粹是为了验证 MongoDB 里面是否有数据而已
+  showAllCounts();
 }
 
 /**
@@ -84,7 +82,7 @@ async function run() {
  * @return {number}    总页数
  */
 async function getNumPages(page) {
-  const NUM_USER_SELECTOR = '#js-pjax-container > div.container > div > div.column.three-fourths.codesearch-results.pr-6 > div.d-flex.flex-justify-between.border-bottom.pb-3 > h3';
+  const NUM_USER_SELECTOR = '#js-pjax-container .codesearch-results h3';
 
   let inner = await page.evaluate((sel) => {
     return document.querySelector(sel).innerHTML;
@@ -103,16 +101,21 @@ async function getNumPages(page) {
 }
 
 /**
+ * 初始化 MongoDB
+ */
+function initMongoDB() {
+  if (mongoose.connection.readyState == 0) {
+    const DB_URL = 'mongodb://localhost/thal';
+    mongoose.connect(DB_URL);
+  }
+}
+
+/**
  * 新增或更新用户信息
  * @param  {object} userObj 用户信息
  */
 function upsertUser(userObj) {
-
-  const DB_URL = 'mongodb://localhost/thal';
-  if (mongoose.connection.readyState == 0) {
-    mongoose.connect(DB_URL);
-  }
-
+  initMongoDB();
   // if this email exists, update the entry, don't insert
   // 如果邮箱存在，就更新实例，不新增
   const conditions = {
@@ -128,6 +131,19 @@ function upsertUser(userObj) {
     if (err) {
       throw err;
     }
+  });
+}
+
+/**
+ * 查找并展示目前有多少已保持的 User
+ */
+function showAllCounts() {
+  initMongoDB();
+  User.count({}, function (err, count) {
+    if (err) {
+      console.error(err);
+    }
+    console.log('==== There are %d users saved ====', count);
   });
 }
 

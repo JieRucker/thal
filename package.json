@@ -4,7 +4,7 @@
   "description": "Web Scrapper with Chrome Headless & Puppeteer",
   "main": "index.js",
   "scripts": {
-    "mongo": "mongod --dbpath ./db",
+    "mongo": "mkdir -p db && mongod --dbpath ./db",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/emadehsan/thal#readme",
   "dependencies": {
-    "mongoose": "^4.11.8",
-    "puppeteer": "0.10.2"
+    "mongoose": "^5.3.10",
+    "puppeteer": "^1.10.0"
   }
 }

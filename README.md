@@ -8,7 +8,7 @@
 
 ![A Desert in painters perception](./media/desertious.jpg)
 
-[`Puppeteer`](https://github.com/GoogleChrome/puppeteer) 是 Google Chrome 团队官方的无界面（Headless）Chrome 工具。正因为这个官方声明，许多业内自动化测试库都已经停止维护，包括 **[PhantomJS](http://phantomjs.org/)**。**[Selenium IDE for Firefox](https://addons.mozilla.org/en-US/firefox/addon/selenium-ide/)** 项目也因为缺乏维护者而终止。
+[`Puppeteer`](https://github.com/GoogleChrome/puppeteer) 是 Google Chrome 团队官方的无头/无界面（Headless）Chrome 工具。正因为这个官方声明，许多业内自动化测试库都已经停止维护，包括 **[PhantomJS](http://phantomjs.org/)**。**[Selenium IDE for Firefox](https://addons.mozilla.org/en-US/firefox/addon/selenium-ide/)** 项目也因为缺乏维护者而终止。
 
 > 译者注：关于 PhantomJS 和 Selenium IDE for Firefox 停止维护并没有找到相关的公告，但这两个项目的确已经都超过 2 年没有发布新版本了。但另一个今年 5 月才开启的项目 [Chromeless](https://github.com/graphcool/chromeless) 目前在 Github 上已经超过 1w star，目前还非常活跃。
 
@@ -47,7 +47,7 @@ $ npm init
 $ npm i --save puppeteer
 ```
 
-Puppeteer 包含了自己的 chrome / chromium 用以确保可以无界面地工作。因此每当你安装/更新 puppeteer 的时候，他都会下载指定的 chrome 版本。
+Puppeteer 包含了自己的 chrome / chromium 用以确保可以无头地工作。因此每当你安装/更新 puppeteer 的时候，他都会下载指定的 chrome 版本。
 
 ## 编码
 
@@ -111,7 +111,7 @@ node_modules/
 creds.js
 ```
 
-#### 以非无界面（non headless）模式启动
+#### 以非无头（non headless）模式启动
 
 在调用 Puppeteer 的 `launch` 方法的时候传入参数对象中带有 `headless: false`，即可启动其 GUI 界面，进行可视化调试。
 
@@ -158,12 +158,15 @@ const CREDS = require('./creds');
 然后
 
 ```js
-await page.click(USERNAME_SELECTOR);
-await page.type(CREDS.username);
+// puppeteer@0.11 以前是需要点击再输入
+// await page.click(USERNAME_SELECTOR);
+// await page.type(CREDS.username);
+// await page.click(PASSWORD_SELECTOR);
+// await page.type(CREDS.password);
 
-await page.click(PASSWORD_SELECTOR);
-await page.type(CREDS.password);
-
+// puppeteer@0.12 以后 page.type 方法需要对某个 selector 进行输入
+await page.type(USERNAME_SELECTOR, CREDS.username);
+await page.type(PASSWORD_SELECTOR, CREDS.password);
 await page.click(BUTTON_SELECTOR);
 
 await page.waitForNavigation();
@@ -248,7 +251,7 @@ console.log(users);
 
 ```js
 async function getNumPages(page) {
-  const NUM_USER_SELECTOR = '#js-pjax-container > div.container > div > div.column.three-fourths.codesearch-results.pr-6 > div.d-flex.flex-justify-between.border-bottom.pb-3 > h3';
+  const NUM_USER_SELECTOR = '#js-pjax-container .codesearch-results h3';
 
   let inner = await page.evaluate((sel) => {
     return document.querySelector(sel).innerHTML;
@@ -311,7 +314,7 @@ for (let h = 1; h <= numPages; h++) {
 $ npm i --save mongoose
 ```
 
-MongoDB 是一个 Schema-less 的 NoSQL 数据库，但我们可以使用 Mongoose 使其遵循一些原则。首先我们需要创建一个 `Model`，他代表 MongoDB 中的 `Collection`。创建一个 `models` 文件夹，然后在里面创建一个 `user.js` 文件，并加入以下 collection 的构造函数代码。之后无论我们塞什么东西进 `User`，他都会遵循这个结构。
+[MongoDB](https://www.mongodb.com/download-center/community) 是一个 Schema-less 的 NoSQL 数据库，但我们可以使用 Mongoose 使其遵循一些原则。首先我们需要创建一个 `Model`，他代表 MongoDB 中的 `Collection`。创建一个 `models` 文件夹，然后在里面创建一个 `user.js` 文件，并加入以下 collection 的构造函数代码。之后无论我们塞什么东西进 `User`，他都会遵循这个结构。
 
 
 ```js
@@ -399,6 +402,7 @@ Chrome Headless 和 Puppeteer 开启了网页爬虫和自动化测试的新纪�
 > 译者注：我爬了100页并没有被阻止。从 101 页开始就变成了 404 页面，或许通过页面下方的页码进行遍历会更合理
 
 ## 结语
+
 广阔无垠的沙漠见证着 `穿越` 这些巨大的沙滩的人们的斗争和牺牲。 [**Thal**](https://en.wikipedia.org/wiki/Thal_Desert) 是巴基斯坦的一个跨越多个地区的沙漠，包括我的家乡 Bhakkar。与今天在 `互联网` 上搜索数据的情况类似。这就是为什么我将这个 repo 命名为 `Thal`。如果你喜欢它，那请与他人分享。如果您有任何建议，请在这里发表评论或直接与原作者联络[@e_mad_ehsan]（https://twitter.com/e_mad_ehsan）。他很乐意听到你的消息。
 
 > 译者注：中文版也欢迎直接提 [issue](https://github.com/csbun/thal/issues) 讨论 或 PR
